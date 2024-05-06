@@ -20,30 +20,25 @@ namespace DocHub.Api.Controllers
             return filePath.Split("/")[0];
         }
 
-        private void storeTheFolder(IFormFileCollection folder)
+        private void StoreTheFolder(IFormFileCollection folder)
         {
             string WebRootPath = env.WebRootPath;
-            string highestFolder = GetHighestFolder(folder.First().FileName);
-            //Console.WriteLine($"highest folder name is : {highestFolder}\n\n\n");
+            string highestFolder = GetHighestFolder(folder[0].FileName);
             string fakeHash = DateTime.Now.ToString("yyyyMMdd_HHmmss");
             string folderPath = Path.Combine(WebRootPath, highestFolder, fakeHash);
-            //Console.WriteLine($"folder path is : {folderPath}\n\n\n");
             Directory.CreateDirectory(folderPath);
 
             foreach (var file in folder)
             {
                 // Combine folderPath and file.FileName to get the full file path
                 string filePath = Path.Combine(folderPath, file.FileName);
-                //Console.WriteLine($"filepath is : {filePath}\n\n\n");
 
                 // Ensure that the directory containing the file exists
                 Directory.CreateDirectory(Path.GetDirectoryName(filePath));
 
                 // Open a file stream and copy the file content
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    file.CopyTo(stream);
-                }
+                using var stream = new FileStream(filePath, FileMode.Create);
+                file.CopyTo(stream);
             }
             addToPathsFolder(fakeHash, folderPath);
         }
@@ -52,7 +47,7 @@ namespace DocHub.Api.Controllers
         [HttpPost("add-version")]
         public IActionResult UploadFolderTest()
         {
-            storeTheFolder(Request.Form.Files);
+            StoreTheFolder(Request.Form.Files);
 
             return Ok(new
             {
@@ -104,17 +99,15 @@ namespace DocHub.Api.Controllers
         {
             string pathsFolder = Path.Join(env.WebRootPath, "paths");
             if (!Directory.Exists(pathsFolder))
-            //if (context.HashPathsPairs.FirstOrDefault(f => f.Hash == id) is not PathsPair pair)
             {
                 return BadRequest(new
                 {
                     message = "paths folder doesn't exists!"
                 });
             }
-            //Directory.GetFiles(pathsFolder).ToList().ForEach(i => Console.WriteLine(i));
             context.HashPathsPairs.Select(i => $"path : {i.Path} , hash : {i.Hash}").ToList().ForEach(i => Console.WriteLine(i));
 
-            if (/*!Directory.GetFiles(pathsFolder).Select(f => Path.GetFileName(f)).Contains(id)*/ context.HashPathsPairs.FirstOrDefault(f => f.Hash == id) is not PathsPair pair)
+            if (context.HashPathsPairs.FirstOrDefault(f => f.Hash == id) is not PathsPair pair)
             {
                 return BadRequest(new
                 {
@@ -122,7 +115,6 @@ namespace DocHub.Api.Controllers
                 });
             }
 
-            //string tokenPath = System.IO.File.ReadLines(pathsFolder).First();
             string tokenPath = pair.Path;
 
             return Ok(new

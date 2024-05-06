@@ -30,9 +30,17 @@ builder.Services.AddDbContext<AppDbContext>();
 builder.Services.AddIdentity<AppUser, IdentityRole<string>>(options =>
 {
     options.User.RequireUniqueEmail = true;
+    options.Password.RequireDigit = false;
+    options.Password.RequireLowercase = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequiredLength = 1;
+    options.Password.RequireNonAlphanumeric = false;
 })
-                .AddEntityFrameworkStores<AppDbContext>()
-                .AddDefaultTokenProviders();
+        .AddEntityFrameworkStores<AppDbContext>()
+        .AddDefaultTokenProviders()
+        //.AddUserManager<AppUser>()
+        //.AddSignInManager<AppUser>()
+/*        .AddRoleManager<AppUser>()*/;
 
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<UserManager<AppUser>>();
