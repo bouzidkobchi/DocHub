@@ -7,6 +7,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="wwwroot\canva items\20240516_095540\canva items\1200x630wa.png" />
+    <None Include="wwwroot\canva items\20240516_095540\canva items\1490889701-linkedin_82539.png" />
+    <None Include="wwwroot\canva items\20240516_095540\canva items\1700425289009.png" />
+    <None Include="wwwroot\canva items\20240516_095540\canva items\c-sharp-c-icon-1822x2048-wuf3ijab.png" />
+    <None Include="wwwroot\canva items\20240516_095540\canva items\Facebook_Logo_2023.png" />
+    <None Include="wwwroot\canva items\20240516_095540\canva items\Features-of-.NET8_.svg" />
+    <None Include="wwwroot\canva items\20240516_095540\canva items\github-icon-2048x1988-jzvzcf2t.png" />
+    <None Include="wwwroot\canva items\20240516_095540\canva items\istockphoto-1286965046-612x612.jpg" />
+    <None Include="wwwroot\canva items\20240516_095540\canva items\Microsoft_.NET_logo.svg.png" />
+    <None Include="wwwroot\canva items\20240516_095540\canva items\Photopea.lnk" />
+    <None Include="wwwroot\canva items\20240516_095540\canva items\shutterstock_390754486.webp" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.4" />

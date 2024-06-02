@@ -1,0 +1,34 @@
+<!-- <form action="http://localhost:5180/Upload" method="post" enctype="multipart/form-data">
+    <input type="file" webkitdirectory mozdirectory />
+    <input type="submit" value="upload">
+</form> -->
+
+<form id="uploadForm">
+    <input type="file" id="folderInput" webkitdirectory mozdirectory />
+    <input type="button" id="uploadBtn" value="Upload" onclick="uploadFolder()">
+</form>
+
+<script>
+    function uploadFolder() {
+        var folderInput = document.getElementById('folderInput');
+        var files = folderInput.files;
+
+        var formData = new FormData();
+        for (var i = 0; i < files.length; i++) {
+            formData.append('files', files[i]);
+        }
+
+        fetch('http://localhost:5182/add-version', {
+            method: 'POST',
+            body: formData,
+            mode :"no-cors"
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+</script>

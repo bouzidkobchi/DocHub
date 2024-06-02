@@ -1,6 +1,8 @@
 ﻿using DocHub.Api.Data;
 using DocHub.Api.Data.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
 
 namespace DocHub.Api.Controllers
 {
@@ -8,6 +10,7 @@ namespace DocHub.Api.Controllers
     {
         private readonly IWebHostEnvironment env;
         public AppDbContext context { get; set; }
+        private const string LAST_VERSION = "LAST_VERSION";
 
         public VersionController(IWebHostEnvironment env, AppDbContext context)
         {
@@ -17,7 +20,7 @@ namespace DocHub.Api.Controllers
 
         private static string GetHighestFolder(string filePath)
         {
-            return filePath.Split("/")[0];
+            return filePath.Split("/")[0];  
         }
 
         private void StoreTheFolder(IFormFileCollection folder)
@@ -97,14 +100,14 @@ namespace DocHub.Api.Controllers
         [HttpGet("get-folder/{id}")]
         public IActionResult GetFolder(string id)
         {
-            string pathsFolder = Path.Join(env.WebRootPath, "paths");
-            if (!Directory.Exists(pathsFolder))
-            {
-                return BadRequest(new
-                {
-                    message = "paths folder doesn't exists!"
-                });
-            }
+            //string pathsFolder = Path.Join(env.WebRootPath, "paths");
+            //if (!Directory.Exists(pathsFolder))
+            //{
+            //    return BadRequest(new
+            //    {
+            //        message = "paths folder doesn't exists!"
+            //    });
+            //}
             context.HashPathsPairs.Select(i => $"path : {i.Path} , hash : {i.Hash}").ToList().ForEach(i => Console.WriteLine(i));
 
             if (context.HashPathsPairs.FirstOrDefault(f => f.Hash == id) is not PathsPair pair)
@@ -121,6 +124,103 @@ namespace DocHub.Api.Controllers
             {
                 tokenPath
             });
+        }
+
+        private string GetLastVersionPath(string folder)
+        {
+            var folderPath = Path.Join(env.WebRootPath, folder);
+            if (!Directory.Exists(folderPath))
+            {
+                return string.Empty;
+            }
+            return Path.Join(Directory.GetDirectories(folderPath)[0],folder);
+        }
+
+        private string GetSpecificVersionPath(string folder , string version)
+        {
+            var folderPath = Path.Join(env.WebRootPath, folder);
+            if (!Directory.Exists(folderPath))
+            {
+                return string.Empty;
+            }
+
+            try
+            {
+                var folderVersion = Directory.GetDirectories(folderPath).First(f => f.EndsWith(version));
+                return Path.Join(folderVersion, folder);
+            }
+            catch
+            {
+                throw new Exception("version not found");
+            }
+        }
+
+
+
+        [HttpGet("folder-content")]
+        public IActionResult GetFolderContentEndpoint([FromQuery, Required] string FolderName, [FromQuery] string version = LAST_VERSION)
+        {
+            if (version == LAST_VERSION)
+            {
+                var folderPath = GetLastVersionPath(FolderName);
+
+                if(folderPath == string.Empty)
+                {
+                    return BadRequest(new
+                    {
+                        message = "folder not found"
+                    });
+                }
+
+                return Ok(GetFolderContent(folderPath));
+            }
+
+            try
+            {
+                return Ok(GetFolderContent(GetSpecificVersionPath(FolderName, version)));
+            }
+            catch
+            {
+                return BadRequest("version not found");
+            }
+        }
+
+        private object GetFolderContent([Required] string folderPath)
+        {
+            if (!Directory.Exists(folderPath))
+            {
+                throw new Exception("folder not found");
+            }
+
+            return new
+            {
+                folderPath,
+                files = Directory.GetFiles(folderPath),
+                folders = Directory.GetDirectories(folderPath)
+            };
+        }
+
+        [HttpGet("content-of-sub-folder")]
+        public IActionResult ContentOfSubFolder([FromQuery, Required] string folderName,
+                                                [FromQuery, Required] string subFolder,
+                                                [FromQuery] string version = LAST_VERSION)
+        {
+            if (subFolder == folderName) return GetFolderContentEndpoint(folderName,version);
+
+            var folderPath = Path.Join(GetLastVersionPath(folderName),subFolder);
+
+            try
+            {
+                var content = GetFolderContent(folderPath);
+                return Ok(content);
+            }
+            catch
+            {
+                return BadRequest(new
+                {
+                    message = "folder not found"
+                });
+            }
         }
     }
 }
